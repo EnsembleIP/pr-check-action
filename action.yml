@@ -1,5 +1,5 @@
 name: "PR Check"
-description: "Validates that PRs targeting release branches use the correct cherry-pick branch naming format"
+description: "Validates that PRs comply with our Trunk-based Development Process"
 author: "EnsembleIP"
 
 inputs:
@@ -30,6 +30,33 @@ runs:
           const pr = context.payload.pull_request;
           const baseRef = pr.base?.ref || '';
           const headRef = pr.head?.ref || '';
+
+          // Check if head branch is a release/* branch - these are dead ends and should never be merged
+          if (headRef.startsWith('release/')) {
+            const body =
+              `**Release branches are dead ends** and are never merged back.\n\n` +
+              `Your head branch is \`${headRef}\`, which is a release branch. ` +
+              `Release branches should not be merged into other branches. Closing this PR now.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              body,
+            });
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              state: 'closed',
+            });
+
+            core.setFailed(
+              `Head branch "${headRef}" is a release branch and cannot be merged. Release branches are dead ends.`
+            );
+            return;
+          }
 
           if (!baseRef.startsWith('release/')) {
             core.info(`Base branch is "${baseRef}", not release/*; skipping.`);

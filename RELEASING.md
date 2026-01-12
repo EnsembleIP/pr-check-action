@@ -7,7 +7,7 @@ GitHub Actions references use Git refs. For example, `uses: ensembleip/pr-check-
 Create a semver tag for the release, and move the major tag to the same commit:
 
 ```bash
-git checkout main
+git checkout master
 git pull
 
 # Create an immutable semver tag for this release
@@ -32,7 +32,7 @@ Before tagging a release, test the action in a real PR:
 1. Create a test repository or use an existing one
 2. Reference the action using a branch or commit SHA:
    ```yaml
-   uses: ensembleip/pr-check-action@main
+   uses: ensembleip/pr-check-action@master
    # or
    uses: ensembleip/pr-check-action@abc123def456
    ```
